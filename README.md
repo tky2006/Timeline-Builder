@@ -5,11 +5,7 @@ An interactive browser-based educational game that helps students learn Malaysia
 ---
 
 ## 🎮 Live Demo
-If hosted on GitHub Pages:
-
-👉 https://YOUR-USERNAME.github.io/YOUR-REPO/
-
-(Replace with your actual link)
+https://tky2006.github.io/Timeline-Builder/
 
 ---
 
