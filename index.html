@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🇲🇾 Timeline Builder · Malaysia History</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: linear-gradient(145deg, #1a2a1a 0%, #2d4128 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            padding: 16px;
+            margin: 0;
+        }
+        .game-wrapper {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(245, 235, 215, 0.93);
+            backdrop-filter: blur(4px);
+            border-radius: 60px 60px 48px 48px;
+            padding: 28px 30px 38px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.7), 0 0 0 3px #b99f78 inset;
+            transition: 0.2s;
+        }
+        h1, h2 {
+            font-weight: 600;
+            color: #1e2c18;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .start-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 16px 0 10px;
+            gap: 12px;
+        }
+        .start-screen h1 {
+            font-size: 3.6rem;
+            color: #1f3d26;
+            text-shadow: 3px 3px 0 #bea885;
+            letter-spacing: 2px;
+        }
+        .start-screen .sub {
+            background: #2d4a30;
+            color: #f2ebd8;
+            padding: 8px 28px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            box-shadow: inset 0 -3px 0 #6a8a63;
+        }
+        .start-screen .desc {
+            background: #d6c8aa;
+            padding: 12px 24px;
+            border-radius: 80px;
+            font-weight: 500;
+            color: #1d2c18;
+            max-width: 440px;
+            margin: 8px 0;
+        }
+        .btn {
+            background: #dbbd94;
+            border: none;
+            border-radius: 60px;
+            color: #1d2b17;
+            font-weight: 700;
+            font-size: 1.6rem;
+            padding: 14px 48px;
+            cursor: pointer;
+            box-shadow: 0 9px 0 #7f6a4a, 0 6px 16px rgba(0,0,0,0.3);
+            transition: 0.06s linear;
+            border: 1px solid #efe3cd;
+            letter-spacing: 1px;
+        }
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 3px 0 #7f6a4a;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            transform: translateY(5px);
+            box-shadow: 0 4px 0 #7f6a4a;
+            pointer-events: none;
+        }
+        .hud {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            background: #253d29;
+            padding: 10px 18px;
+            border-radius: 80px;
+            color: #f2ebd8;
+            font-weight: 600;
+            font-size: 1.05rem;
+            box-shadow: 0 5px 0 #142013;
+            margin-bottom: 6px;
+        }
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #17321e;
+            padding: 3px 18px 3px 14px;
+            border-radius: 40px;
+        }
+        .hud-item span {
+            background: #dbbb8f;
+            color: #1d2b16;
+            padding: 0 14px;
+            border-radius: 40px;
+            font-weight: 700;
+            min-width: 32px;
+            text-align: center;
+        }
+        .lives-icon {
+            color: #f77b7b;
+            font-size: 1.6rem;
+            letter-spacing: 3px;
+        }
+        .timer-bar {
+            width: 100%;
+            height: 14px;
+            background: #2c442b;
+            border-radius: 40px;
+            overflow: hidden;
+            margin: 6px 0 12px;
+            box-shadow: inset 0 2px 6px #0d1a0d;
+        }
+        .timer-fill {
+            height: 100%;
+            width: 100%;
+            background: #f3c68e;
+            border-radius: 40px;
+            transition: width 0.25s linear;
+        }
+        .timeline-area {
+            background: #fcf3e2;
+            border-radius: 48px;
+            padding: 24px 22px;
+            box-shadow: 0 8px 0 #a38764, inset 0 2px 10px #fff7e8;
+            min-height: 400px;
+        }
+        .round-badge {
+            background: #4f6b41;
+            color: #f0ebd3;
+            display: inline-block;
+            padding: 4px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .instruction-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 12px 0 16px;
+            color: #1f2a14;
+            text-align: center;
+        }
+        .timeline-slots {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 220px;
+            padding: 12px 10px;
+            background: #e8dcc8;
+            border-radius: 40px;
+            border: 3px dashed #b3926b;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .timeline-slots.dragover {
+            background: #d6c8aa;
+            border-color: #4f6b41;
+            transform: scale(1.01);
+        }
+        .slot {
+            background: rgba(255, 248, 235, 0.6);
+            border: 2px dashed #a88b6a;
+            border-radius: 30px;
+            padding: 10px 16px;
+            min-height: 56px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .slot.filled {
+            background: #e6d5b9;
+            border: 2px solid #b3926b;
+            border-style: solid;
+        }
+        .slot.highlight {
+            background: #c8dbb8;
+            border-color: #4f6b41;
+            transform: scale(1.02);
+        }
+        .slot .slot-number {
+            font-weight: 700;
+            color: #7d6543;
+            margin-right: 14px;
+            font-size: 1.1rem;
+            min-width: 28px;
+        }
+        .slot .event-card {
+            flex: 1;
+            background: #dbbd94;
+            border: 2px solid #b3926b;
+            border-radius: 30px;
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: #1d2416;
+            cursor: grab;
+            box-shadow: 0 4px 0 #7d6543;
+            transition: all 0.15s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .slot .event-card:active {
+            cursor: grabbing;
+        }
+        .slot .event-card .year-badge {
+            background: #4f6b41;
+            color: #f0ebd3;
+            padding: 2px 16px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .slot .event-card.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+        .slot .event-card.correct {
+            background: #8bc34a;
+            border-color: #2e7d32;
+        }
+        .slot .event-card.correct .year-badge {
+            background: #2e7d32;
+        }
+        .slot .event-card.wrong {
+            background: #d46a6a;
+            border-color: #a13333;
+            animation: shake 0.4s;
+        }
+        .slot .event-card.wrong .year-badge {
+            background: #a13333;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-12px); }
+            60% { transform: translateX(12px); }
+        }
+        .slot .event-card.placed {
+            cursor: default;
+        }
+        .slot .event-card .drag-hint {
+            font-size: 0.8rem;
+            color: #7d6543;
+            margin-left: 10px;
+            opacity: 0.6;
+        }
+        .event-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 14px 10px 6px;
+            min-height: 70px;
+            border-top: 2px solid #c9b694;
+            margin-top: 12px;
+        }
+        .event-pool .pool-card {
+            background: #e6d5b9;
+            border: 2px solid #b3926b;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1d2416;
+            cursor: grab;
+            box-shadow: 0 4px 0 #7d6543;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .event-pool .pool-card:active {
+            cursor: grabbing;
+        }
+        .event-pool .pool-card.dragging {
+            opacity: 0.4;
+            transform: scale(0.9);
+        }
+        .event-pool .pool-card .year-badge {
+            background: #8a7a5a;
+            color: #f0ebd3;
+            padding: 2px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+        }
+        .feedback {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 14px 0 2px;
+            min-height: 4rem;
+        }
+        .feedback.correct { color: #1f7a3a; }
+        .feedback.wrong { color: #b32b2b; }
+        .feedback.info { color: #3a6b8a; }
+        .end-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            padding: 10px 0;
+        }
+        .end-screen h2 {
+            font-size: 3rem;
+            color: #1e3a21;
+        }
+        .stars-display {
+            font-size: 5.2rem;
+            letter-spacing: 14px;
+            line-height: 1.2;
+        }
+        .final-score {
+            background: #28422b;
+            color: #efe6ce;
+            padding: 12px 40px;
+            border-radius: 80px;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        .btn-restart {
+            background: #b69264;
+            box-shadow: 0 9px 0 #6a5437;
+            margin-top: 8px;
+        }
+        .progress-ring {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .progress-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #4a5a3e;
+            transition: 0.3s;
+        }
+        .progress-dot.filled {
+            background: #dbbb8f;
+        }
+        .progress-dot.correct-dot {
+            background: #8bc34a;
+        }
+        .progress-dot.wrong-dot {
+            background: #d46a6a;
+        }
+        @media (max-width: 580px) {
+            .game-wrapper { padding: 18px 14px; }
+            .slot .event-card { font-size: 0.9rem; padding: 8px 14px; flex-wrap: wrap; gap: 4px; }
+            .event-pool .pool-card { font-size: 0.9rem; padding: 8px 14px; }
+            .start-screen h1 { font-size: 2.8rem; }
+            .hud { font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-wrapper">
+    <!-- START -->
+    <div id="startScreen" class="start-screen">
+        <h1>📜 TIMELINE</h1>
+        <div class="sub">Malaysia · Form 4 & 5</div>
+        <div class="desc">🎯 Drag events into <strong>chronological order</strong> (oldest → newest)<br>⏳ 30s per round · 3 lives · 10 rounds</div>
+        <button class="btn" id="startBtn">⚡ START</button>
+        <div style="margin-top:8px; font-size:0.95rem; background:#dccdb2; padding:4px 18px; border-radius:60px; color:#23351d;">⭐ 3 stars = perfect · 2 = above average</div>
+    </div>
+
+    <!-- GAME -->
+    <div id="gameScreen" class="game-screen hidden">
+        <div class="hud">
+            <div class="hud-item">🏆 <span id="roundDisplay">1/10</span></div>
+            <div class="hud-item">⭐ <span id="scoreDisplay">0</span></div>
+            <div class="hud-item lives-icon" id="livesDisplay">❤️❤️❤️</div>
+            <div class="hud-item">⏳ <span id="timerDisplay">30</span>s</div>
+            <div class="hud-item progress-ring" id="progressRing"></div>
+        </div>
+        <div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+
+        <div class="timeline-area">
+            <div class="round-badge" id="roundBadge">Round 1</div>
+            <div class="instruction-text" id="instructionText">🔄 Drag events into the timeline slots <strong>from oldest to newest</strong></div>
+            <div class="timeline-slots" id="timelineSlots"></div>
+            <div class="event-pool" id="eventPool"></div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+    </div>
+
+    <!-- END -->
+    <div id="endScreen" class="end-screen hidden">
+        <h2>🏁 GAME OVER</h2>
+        <div class="stars-display" id="starsDisplay">⭐⭐⭐</div>
+        <div class="final-score" id="finalScoreText">0 points</div>
+        <div style="font-size:1.2rem; background:#d6c6a8; padding:6px 24px; border-radius:60px;" id="endMessage"></div>
+        <button class="btn btn-restart" id="restartBtn">↻ PLAY AGAIN</button>
+    </div>
+</div>
+
+<script>
+    (function(){
+        "use strict";
+
+        // ===== MALAYSIA SECONDARY HISTORY – TIMELINE EVENTS =====
+        const ROUNDS = [
+            {
+                events: [
+                    { name: "Federation of Malaya formed", year: 1948 },
+                    { name: "Malaya Independence (Merdeka)", year: 1957 },
+                    { name: "Malaysia formed", year: 1963 },
+                    { name: "Singapore separation", year: 1965 }
+                ]
+            },
+            {
+                events: [
+                    { name: "First Agong installed", year: 1957 },
+                    { name: "Universiti Malaya public", year: 1962 },
+                    { name: "ASEAN founding", year: 1967 },
+                    { name: "May 13 riots", year: 1969 }
+                ]
+            },
+            {
+                events: [
+                    { name: "Malaya Independence", year: 1957 },
+                    { name: "Malaysia formed", year: 1963 },
+                    { name: "NEP launched", year: 1970 },
+                    { name: "Rukun Negara introduced", year: 1970 }
+                ]
+            },
+            {
+                events: [
+                    { name: "Federation of Malaya", year: 1948 },
+                    { name: "Malaya Independence", year: 1957 },
+                    { name: "Singapore separation", year: 1965 },
+                    { name: "ASEAN founded", year: 1967 }
+                ]
+            },
+            {
+                events: [
+                    { name: "Universiti Malaya public", year: 1962 },
+                    { name: "Malaysia formed", year: 1963 },
+                    { name: "May 13 riots", year: 1969 },
+                    { name: "NEP launched", year: 1970 }
+                ]
+            },
+            {
+                events: [
+                    { name: "Federation of Malaya", year: 1948 },
+                    { name: "First Agong installed", year: 1957 },
+                    { name: "ASEAN founding", year: 1967 },
+                    { name: "Rukun Negara", year: 1970 }
+                ]
+            },
+            {
+                events: [
+                    { name: "Malaya Independence", year: 1957 },
+                    { name: "Malaysia formed", year: 1963 },
+                    { name: "Singapore leaves", year: 1965 },
+                    { name: "May 13 riots", year: 1969 }
+                ]
+            },
+            {
+                events: [
+                    { name: "Federation of Malaya", year: 1948 },
+                    { name: "Universiti Malaya public", year: 1962 },
+                    { name: "NEP launched", year: 1970 },
+                    { name: "Rukun Negara", year: 1970 }
+                ]
+            },
+            {
+                events: [
+                    { name: "First Agong installed", year: 1957 },
+                    { name: "Malaysia formed", year: 1963 },
+                    { name: "ASEAN founded", year: 1967 },
+                    { name: "May 13 riots", year: 1969 }
+                ]
+            },
+            {
+                events: [
+                    { name: "Federation of Malaya", year: 1948 },
+                    { name: "Malaya Independence", year: 1957 },
+                    { name: "Malaysia formed", year: 1963 },
+                    { name: "Singapore separation", year: 1965 }
+                ]
+            }
+        ];
+
+        // ---------- STATE ----------
+        const state = {
+            currentRound: 0,
+            score: 0,
+            lives: 3,
+            timer: 30,
+            timerInterval: null,
+            isPlaying: false,
+            roundActive: false,
+            totalRounds: ROUNDS.length,
+            shuffledEvents: [],
+            slotContents: [],
+            poolEvents: [],
+            draggedIndex: null,
+            draggedFromPool: false,
+            draggedSlotIndex: null,
+            roundHistory: []
+        };
+
+        // DOM
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const endScreen = document.getElementById('endScreen');
+
+        const roundDisplay = document.getElementById('roundDisplay');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const livesDisplay = document.getElementById('livesDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerFill = document.getElementById('timerFill');
+        const roundBadge = document.getElementById('roundBadge');
+        const instructionText = document.getElementById('instructionText');
+        const timelineSlots = document.getElementById('timelineSlots');
+        const eventPool = document.getElementById('eventPool');
+        const feedback = document.getElementById('feedback');
+        const progressRing = document.getElementById('progressRing');
+
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const finalScoreText = document.getElementById('finalScoreText');
+        const starsDisplay = document.getElementById('starsDisplay');
+        const endMessage = document.getElementById('endMessage');
+
+        // ---------- AUDIO ----------
+        let audioCtx = null;
+        function initAudio() { 
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playTone(freq, dur, type='sine', vol=0.25) {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + dur);
+            } catch (_) {}
+        }
+        function soundCorrect() { playTone(880, 0.2, 'sine', 0.3); setTimeout(()=>playTone(1100,0.18,'sine',0.25),140); }
+        function soundWrong() { playTone(250, 0.4, 'sawtooth', 0.2); }
+        function soundGameOver() { playTone(400,0.35,'square',0.18); setTimeout(()=>playTone(280,0.4,'square',0.18),300); }
+        function soundPlace() { playTone(660, 0.08, 'sine', 0.15); }
+
+        // bg music - louder
+        let bgInterval = null, bgStarted = false;
+        function startBackgroundMusic() {
+            if (bgStarted) return;
+            bgStarted = true;
+            initAudio();
+            let note = 0;
+            const notes = [523, 659, 784, 523, 587, 659];
+            bgInterval = setInterval(() => {
+                if (!state.isPlaying) return;
+                try { playTone(notes[note % notes.length], 0.2, 'triangle', 0.12); note++; } catch(_) {}
+            }, 540);
+        }
+        function stopBackgroundMusic() {
+            if (bgInterval) { clearInterval(bgInterval); bgInterval = null; bgStarted = false; }
+        }
+
+        // ---------- UI ----------
+        function updateHUD() {
+            roundDisplay.textContent = `${state.currentRound+1}/${state.totalRounds}`;
+            scoreDisplay.textContent = state.score;
+            let hearts = '';
+            for (let i=0; i<state.lives; i++) hearts += '❤️';
+            if (state.lives === 0) hearts = '💀';
+            livesDisplay.textContent = hearts || '💔';
+            timerDisplay.textContent = Math.ceil(state.timer);
+            timerFill.style.width = Math.max(0, (state.timer/30)*100) + '%';
+            updateProgressRing();
+        }
+
+        function updateProgressRing() {
+            progressRing.innerHTML = '';
+            for (let i = 0; i < state.totalRounds; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'progress-dot';
+                if (i < state.roundHistory.length) {
+                    dot.classList.add(state.roundHistory[i] === 'correct' ? 'correct-dot' : 'wrong-dot');
+                } else if (i === state.currentRound && state.isPlaying) {
+                    dot.classList.add('filled');
+                }
+                progressRing.appendChild(dot);
+            }
+        }
+
+        function showFeedback(msg, type) {
+            feedback.textContent = msg;
+            feedback.className = 'feedback ' + (type === 'correct' ? 'correct' : (type === 'wrong' ? 'wrong' : 'info'));
+        }
+        function clearFeedback() { feedback.textContent = ''; feedback.className = 'feedback'; }
+
+        // ---------- SHUFFLE ----------
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // ---------- RENDER ----------
+        function renderTimeline() {
+            timelineSlots.innerHTML = '';
+            const totalSlots = state.shuffledEvents.length;
+            for (let i = 0; i < totalSlots; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'slot' + (state.slotContents[i] ? ' filled' : '');
+                slot.dataset.slotIndex = i;
+
+                const number = document.createElement('span');
+                number.className = 'slot-number';
+                number.textContent = `${i+1}.`;
+                slot.appendChild(number);
+
+                if (state.slotContents[i]) {
+                    const ev = state.slotContents[i];
+                    const card = document.createElement('div');
+                    card.className = 'event-card placed';
+                    card.draggable = true;
+                    card.innerHTML = `${ev.name} <span class="year-badge">${ev.year}</span> <span class="drag-hint">↕</span>`;
+                    card.dataset.eventIndex = state.shuffledEvents.indexOf(ev);
+                    card.dataset.slotIndex = i;
+
+                    card.addEventListener('dragstart', (e) => {
+                        if (!state.roundActive) { e.preventDefault(); return; }
+                        state.draggedIndex = parseInt(card.dataset.eventIndex);
+                        state.draggedSlotIndex = parseInt(card.dataset.slotIndex);
+                        state.draggedFromPool = false;
+                        card.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+
+                    card.addEventListener('dragend', () => {
+                        card.classList.remove('dragging');
+                    });
+
+                    slot.appendChild(card);
+                } else {
+                    // Empty slot - drop target
+                    slot.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'move';
+                        slot.classList.add('highlight');
+                    });
+                    slot.addEventListener('dragleave', () => {
+                        slot.classList.remove('highlight');
+                    });
+                    slot.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        slot.classList.remove('highlight');
+                        if (!state.roundActive) return;
+                        handleDropToSlot(parseInt(slot.dataset.slotIndex));
+                    });
+                }
+
+                timelineSlots.appendChild(slot);
+            }
+            renderPool();
+        }
+
+        function renderPool() {
+            eventPool.innerHTML = '';
+            if (state.poolEvents.length === 0) {
+                const empty = document.createElement('div');
+                empty.style.cssText = 'color:#7d6543; font-style:italic; padding:8px; width:100%; text-align:center;';
+                empty.textContent = '✨ All events placed!';
+                eventPool.appendChild(empty);
+                return;
+            }
+
+            state.poolEvents.forEach(ev => {
+                const card = document.createElement('div');
+                card.className = 'pool-card';
+                card.draggable = true;
+                card.innerHTML = `${ev.name} <span class="year-badge">${ev.year}</span>`;
+                card.dataset.eventIndex = state.shuffledEvents.indexOf(ev);
+
+                card.addEventListener('dragstart', (e) => {
+                    if (!state.roundActive) { e.preventDefault(); return; }
+                    state.draggedIndex = parseInt(card.dataset.eventIndex);
+                    state.draggedFromPool = true;
+                    state.draggedSlotIndex = null;
+                    card.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                });
+
+                eventPool.appendChild(card);
+            });
+        }
+
+        // ---------- DROP HANDLING ----------
+        function handleDropToSlot(slotIndex) {
+            if (state.draggedIndex === null) return;
+            if (state.slotContents[slotIndex]) return;
+
+            const ev = state.shuffledEvents[state.draggedIndex];
+
+            const poolIdx = state.poolEvents.indexOf(ev);
+            if (poolIdx !== -1) {
+                state.poolEvents.splice(poolIdx, 1);
+            } else if (state.draggedSlotIndex !== null) {
+                state.slotContents[state.draggedSlotIndex] = null;
+            }
+
+            state.slotContents[slotIndex] = ev;
+            soundPlace();
+
+            state.draggedIndex = null;
+            state.draggedSlotIndex = null;
+
+            if (state.slotContents.every(s => s !== null)) {
+                checkTimelineOrder();
+            } else {
+                renderTimeline();
+            }
+        }
+
+        // ---------- CHECK ORDER ----------
+        function checkTimelineOrder() {
+            state.roundActive = false;
+            clearInterval(state.timerInterval);
+            state.timerInterval = null;
+
+            const sorted = [...state.shuffledEvents].sort((a, b) => a.year - b.year);
+            let isCorrect = true;
+            for (let i = 0; i < state.slotContents.length; i++) {
+                if (state.slotContents[i] !== sorted[i]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            const cards = timelineSlots.querySelectorAll('.event-card');
+            cards.forEach((card, i) => {
+                const ev = state.slotContents[i];
+                if (ev === sorted[i]) {
+                    card.classList.add('correct');
+                } else {
+                    card.classList.add('wrong');
+                }
+                card.draggable = false;
+            });
+
+            if (isCorrect) {
+                state.score += 10;
+                state.roundHistory.push('correct');
+                showFeedback('✅ Perfect timeline! +10 pts', 'correct');
+                soundCorrect();
+            } else {
+                state.lives = Math.max(0, state.lives - 1);
+                state.roundHistory.push('wrong');
+                showFeedback('❌ Wrong order! Correct order shown.', 'wrong');
+                soundWrong();
+                for (let i = 0; i < sorted.length; i++) {
+                    state.slotContents[i] = sorted[i];
+                }
+                // Re-render with correct order
+                renderTimeline();
+                const newCards = timelineSlots.querySelectorAll('.event-card');
+                newCards.forEach((card, i) => {
+                    card.classList.add('correct');
+                    card.draggable = false;
+                });
+            }
+
+            updateHUD();
+
+            if (state.lives <= 0) {
+                setTimeout(() => endGame(), 1200);
+                return;
+            }
+
+            setTimeout(() => nextRound(), 1800);
+        }
+
+        // ---------- ROUND LOGIC ----------
+        function loadRound() {
+            if (state.currentRound >= state.totalRounds || state.lives <= 0) {
+                endGame();
+                return;
+            }
+
+            const roundData = ROUNDS[state.currentRound];
+            state.shuffledEvents = shuffleArray([...roundData.events]);
+            state.slotContents = new Array(state.shuffledEvents.length).fill(null);
+            state.poolEvents = [...state.shuffledEvents];
+            state.roundActive = true;
+            state.timer = 30;
+            state.draggedIndex = null;
+
+            roundBadge.textContent = `Round ${state.currentRound+1}`;
+            instructionText.textContent = `🔄 Drag events into slots (oldest → newest) · ${state.shuffledEvents.length} events`;
+            clearFeedback();
+            updateHUD();
+
+            renderTimeline();
+
+            if (state.timerInterval) clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                state.timer = Math.max(0, state.timer - 0.3);
+                updateHUD();
+                if (state.timer <= 0) {
+                    clearInterval(state.timerInterval);
+                    state.timerInterval = null;
+                    if (state.roundActive) {
+                        state.roundActive = false;
+                        state.lives = Math.max(0, state.lives - 1);
+                        state.roundHistory.push('wrong');
+                        showFeedback('⏰ Time out!', 'wrong');
+                        soundWrong();
+                        const sorted = [...state.shuffledEvents].sort((a, b) => a.year - b.year);
+                        for (let i = 0; i < sorted.length; i++) {
+                            state.slotContents[i] = sorted[i];
+                        }
+                        renderTimeline();
+                        const cards = timelineSlots.querySelectorAll('.event-card');
+                        cards.forEach((card, i) => {
+                            card.classList.add('correct');
+                            card.draggable = false;
+                        });
+                        updateHUD();
+                        if (state.lives <= 0) {
+                            setTimeout(() => endGame(), 1000);
+                            return;
+                        }
+                        setTimeout(() => nextRound(), 1600);
+                    }
+                }
+            }, 300);
+        }
+
+        function nextRound() {
+            state.currentRound++;
+            if (state.currentRound >= state.totalRounds || state.lives <= 0) {
+                endGame();
+            } else {
+                loadRound();
+            }
+        }
+
+        // ---------- END ----------
+        function endGame() {
+            state.isPlaying = false;
+            state.roundActive = false;
+            if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+            stopBackgroundMusic();
+
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+
+            const maxScore = state.totalRounds * 10;
+            const pct = state.score / maxScore;
+            let stars = 1, msg = 'Keep studying history!';
+            if (pct === 1) { stars = 3; msg = '🏆 Perfect historian!'; }
+            else if (pct >= 0.7) { stars = 2; msg = '📖 Above average! Keep it up.'; }
+            else { stars = 1; msg = '📚 Review your timeline notes.'; }
+            if (state.lives <= 0 && pct >= 0.7) stars = 2;
+            if (state.lives <= 0 && pct < 0.7) stars = 1;
+            if (state.lives > 0 && pct === 1) stars = 3;
+
+            starsDisplay.textContent = '⭐'.repeat(stars);
+            finalScoreText.textContent = `${state.score} points`;
+            endMessage.textContent = msg;
+            if (state.lives <= 0) soundGameOver();
+        }
+
+        // ---------- RESET / START ----------
+        function resetGame() {
+            state.currentRound = 0;
+            state.score = 0;
+            state.lives = 3;
+            state.timer = 30;
+            state.isPlaying = false;
+            state.roundActive = false;
+            state.roundHistory = [];
+            state.shuffledEvents = [];
+            state.slotContents = [];
+            state.poolEvents = [];
+            if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+            stopBackgroundMusic();
+            startScreen.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            clearFeedback();
+            updateHUD();
+            timerFill.style.width = '100%';
+            timelineSlots.innerHTML = '';
+            eventPool.innerHTML = '';
+        }
+
+        function startGame() {
+            resetGame();
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            endScreen.classList.add('hidden');
+            state.isPlaying = true;
+            state.currentRound = 0;
+            state.score = 0;
+            state.lives = 3;
+            state.roundHistory = [];
+            updateHUD();
+            startBackgroundMusic();
+            loadRound();
+        }
+
+        // ---------- EVENTS ----------
+        startBtn.addEventListener('click', ()=>{ initAudio(); startGame(); });
+        restartBtn.addEventListener('click', ()=>{ initAudio(); resetGame(); startGame(); });
+
+        document.addEventListener('dragover', (e) => e.preventDefault());
+        document.addEventListener('drop', (e) => e.preventDefault());
+
+        window.addEventListener('load', ()=>{
+            resetGame();
+            timelineSlots.innerHTML = '<div style="padding:30px;text-align:center;color:#7d6543;">Press START to begin</div>';
+        });
+
+        document.addEventListener('click', ()=>{ initAudio(); }, { once: true });
+    })();
+</script>
+</body>
+</html>
